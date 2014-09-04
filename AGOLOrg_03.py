@@ -34,18 +34,13 @@ def generateToken(portal,username,password):
 def createGroup(portal, groupTitle, groupDescription, token):
     params = urllib.urlencode({'title': groupTitle, 
         'description': groupDescription,
-        'tags':'destacado,contenido,demo,esri,spain', #cambiar por un array
+        'tags':'destacado,contenido,demo,esri,spain', #TODO list of properties per group
         'access':'org', 'token': token, 'f':'json'})
     request = portal + '/sharing/rest/community/createGroup?'
     response = json.loads(urllib.urlopen(request, params).read())
     data = urllib.urlopen(request, params).read()
 
-##    if not 'group' in response:
-##        print "Can't create group" + data
-##        #exit()
-
-    groupID = response['group']['id']
-    print "Created Group #" + groupID    
+    print "Group " + groupTitle +" created" 
 
 # add Items to the organizations
 def addItemsToGroup(portal, groupID, items, token):
@@ -83,7 +78,9 @@ def readGroupsFromTxt(path):
 def main():
     portal = 'https://www.arcgis.com'
 
-    #solicitar entrada al usuario
+    # Ask named user credentials
+    username = ''
+    customer = ''
     customer = raw_input("Customer Name [{0}]: ".format(customer)) or customer
     username = raw_input("Username [{0}]: ".format(username)) or username
     password = getpass.getpass() or raw_input("Password [{0}]: ".format("fomentofomento"))
@@ -92,19 +89,11 @@ def main():
     token = generateToken(portal,username,password)
 
     grupos = readGroupsFromTxt(openGroupFileDialog())
-    # Crear grupo
+    # Create groups
     for grupo in grupos:
         print grupo
         groupID = createGroup(portal, grupo, 
-            'Grupo de ' + grupo + ' del Ayuntamiento de Viladecans ' + customer, token)
-
-    myID = getOrganizationId(portal,token)
-
-    properties = {
-        'name': customer + ' - Portal demostrativo',
-        'homePageFeaturedContent': groupID,
-    }
-    setOrganizationProperties(portal, myID, properties, token)
+            'Grupo de ' + grupo + ' del ' + customer, token)
 
     print "Done"
 
